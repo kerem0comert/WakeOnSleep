@@ -1,6 +1,7 @@
 package org.keremcomert.wakeonsleep
 
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.coroutines.*
@@ -13,7 +14,10 @@ import java.util.regex.Pattern
 class MainActivity : AppCompatActivity() {
     private lateinit var b: ActivityMainBinding
     private val wolJob = Job()
-    private val coroutineScope = CoroutineScope(Dispatchers.Main + wolJob)
+    private val sleepJob = Job()
+
+    private val wolScope = CoroutineScope(Dispatchers.Main + wolJob)
+
 
     companion object {
         const val SEPERATOR = ":"
@@ -27,30 +31,39 @@ class MainActivity : AppCompatActivity() {
         b = ActivityMainBinding.inflate(layoutInflater)
         with(b) {
             setContentView(root)
-            bWOL.setOnClickListener { createWOLCoroutine() }
+            bWOL.setOnClickListener { wolScope.launch(Dispatchers.Main) { sendWOLSignal() } }
+
+        }
+       checkForSleepiness()
+    }
+
+
+    private fun checkForSleepiness() {
+        wolScope.launch {
+            while(isActive) {
+                sendWOLSignal()
+                delay(1000)
+            }
         }
     }
 
-    private fun createWOLCoroutine() {
-        coroutineScope.launch(Dispatchers.Main) { sendWOLSignal() }
-    }
+
     private suspend fun sendWOLSignal() {
         withContext(Dispatchers.IO) {
+            wolJob.start()
             val socket = DatagramSocket(PORT)
-            socket.broadcast = true
             var hexData = "ffffffffffff"
-            for (x in 0..15){ hexData += MAC }
-            Log.d("SEND", hexData)
+            for (x in 0..15) {
+                hexData += MAC
+            }
             val data: ByteArray = BigInteger(hexData, 16).toByteArray()
             val packet = DatagramPacket(data, data.size, InetAddress.getByName(IP), 9)
             Log.d("SEND", "Data: $data, data.size: ${data.size}, Inet:  ${InetAddress.getByName(IP)}")
+            socket.broadcast = true
             socket.send(packet)
             socket.close()
+            wolJob.complete()
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        wolJob.cancel()
-    }
 }
