@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">WakeOnSleep</string>
+    <string name="need_activity_recognition">Activity recognition permission is needed to detect that you are sleeping.</string>
 </resources>
