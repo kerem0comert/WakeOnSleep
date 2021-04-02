@@ -19,6 +19,7 @@ import java.net.InetAddress
 
 class SleepReceiver() : BroadcastReceiver() {
 
+    private var counter = 0
 
     override fun onReceive(context: Context?, intent: Intent?) {
         Log.d("SEND", "REC IS CALLED")
@@ -27,17 +28,12 @@ class SleepReceiver() : BroadcastReceiver() {
             val sleepClassifyEvents: List<SleepClassifyEvent> =
                 SleepClassifyEvent.extractEvents(intent)
             Log.d("SEND", "My confidence: ${sleepClassifyEvents[0].confidence}")
-            //sendWOLSignal(context!!)
-            startMainActivityToLockScreen(context!!)
+            if(counter > 3) sendWOLSignal(context!!)
+            else if(sleepClassifyEvents[0].confidence > 85) counter++
         } else if (SleepSegmentEvent.hasEvents(intent)) {
             val sleepSegmentEvents: List<SleepSegmentEvent> =
                 SleepSegmentEvent.extractEvents(intent)
             Log.d("SEND", "SleepSegmentEvent List: $sleepSegmentEvents")
-            //listener?.onClassifyReceived(sleepSegmentEvents[0].status)
-            //sendWOLSignal(context!!)
-
-            startMainActivityToLockScreen(context!!)
-            Log.d("SEND", "listener fired")
         }
     }
 
@@ -61,7 +57,6 @@ class SleepReceiver() : BroadcastReceiver() {
             socket.broadcast = true
             socket.send(packet)
             socket.close()
-
             startMainActivityToLockScreen(ctx)
         }
         //wolJob.complete()
@@ -70,11 +65,10 @@ class SleepReceiver() : BroadcastReceiver() {
     private fun startMainActivityToLockScreen(ctx: Context){
         val bundle = Bundle()
         bundle.putBoolean(LOCK_SCREEN, true)
-
         val intent = Intent()
         intent.setClassName(ctx, "org.keremcomert.wakeonsleep.MainActivity")
         intent.putExtras(bundle)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK;
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
         ctx.startActivity(intent)
     }
 
