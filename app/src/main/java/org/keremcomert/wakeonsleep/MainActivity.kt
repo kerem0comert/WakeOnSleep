@@ -28,6 +28,7 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         const val PORT = 4532
         const val PERM_REQ_CODE = 21
         const val LOCK_SCREEN = "lockScreen"
+        const val LOG_TAG = "LogTag"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,10 +46,10 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         }
 
         if (EasyPermissions.hasPermissions(this, Manifest.permission.ACTIVITY_RECOGNITION)) {
-            Log.d("SEND", "has perm")
+            Log.d(LOG_TAG, "has perm")
             checkForSleepiness()
         } else {
-            Log.d("SEND", "NO perm")
+            Log.d(LOG_TAG, "NO perm")
             askForPermission()
         }
     }
@@ -70,22 +71,20 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
 
 
     private fun checkForSleepiness() {
-        Log.d("SEND", "requestSleepSegmentUpdates()")
         val task = ActivityRecognition.getClient(this).requestSleepSegmentUpdates(
             SleepReceiver().createSleepReceiverPendingIntent(context = applicationContext),
             SleepSegmentRequest.getDefaultSleepSegmentRequest()
         )
 
         task.addOnSuccessListener {
-            Log.d("SEND", "Successfully subscribed to sleep data.")
+            Log.d(LOG_TAG, "Successfully subscribed to sleep data.")
         }
         task.addOnFailureListener { exception ->
-            Log.d("SEND", "Exception when subscribing to sleep data: $exception")
+            Log.d(LOG_TAG, "Exception when subscribing to sleep data: $exception")
         }
     }
 
     private fun askForPermission() {
-        Log.d("SEND", "here")
         EasyPermissions.requestPermissions(
             this,
             getString(R.string.need_activity_recognition),

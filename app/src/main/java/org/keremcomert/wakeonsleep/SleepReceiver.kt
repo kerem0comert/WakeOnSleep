@@ -22,23 +22,22 @@ class SleepReceiver() : BroadcastReceiver() {
     private var counter = 0
 
     override fun onReceive(context: Context?, intent: Intent?) {
-        Log.d("SEND", "REC IS CALLED")
-
+        Log.d(MainActivity.LOG_TAG, "onReceive()")
         if (SleepClassifyEvent.hasEvents(intent)) {
             val sleepClassifyEvents: List<SleepClassifyEvent> =
                 SleepClassifyEvent.extractEvents(intent)
-            Log.d("SEND", "My confidence: ${sleepClassifyEvents[0].confidence}")
+            Log.d(MainActivity.LOG_TAG, "My confidence: ${sleepClassifyEvents[0].confidence}")
             if(counter > 3) sendWOLSignal(context!!)
             else if(sleepClassifyEvents[0].confidence > 85) counter++
         } else if (SleepSegmentEvent.hasEvents(intent)) {
             val sleepSegmentEvents: List<SleepSegmentEvent> =
                 SleepSegmentEvent.extractEvents(intent)
-            Log.d("SEND", "SleepSegmentEvent List: $sleepSegmentEvents")
+            Log.d(MainActivity.LOG_TAG, "SleepSegmentEvent List: $sleepSegmentEvents")
         }
     }
 
     private fun sendWOLSignal(ctx: Context) {
-        Log.d("SEND", "SENDING WOL IN GLOBAL")
+        Log.d(MainActivity.LOG_TAG, "SENDING WOL IN GLOBAL")
         GlobalScope.launch(Dispatchers.IO) {
             val socket = DatagramSocket(MainActivity.PORT)
             var hexData = "ffffffffffff"
@@ -48,7 +47,7 @@ class SleepReceiver() : BroadcastReceiver() {
             val data: ByteArray = BigInteger(hexData, 16).toByteArray()
             val packet = DatagramPacket(data, data.size, InetAddress.getByName(MainActivity.IP), 9)
             Log.d(
-                "SEND", "Data: $data, data.size: ${data.size}, Inet:  ${
+                MainActivity.LOG_TAG, "Data: $data, data.size: ${data.size}, Inet:  ${
                     InetAddress.getByName(
                         MainActivity.IP
                     )
