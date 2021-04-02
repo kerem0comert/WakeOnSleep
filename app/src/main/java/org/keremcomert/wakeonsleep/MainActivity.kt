@@ -19,18 +19,15 @@ import org.keremcomert.wakeonsleep.databinding.ActivityMainBinding
 import pub.devrel.easypermissions.EasyPermissions
 
 
-class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks, ClassifyReceivedListener {
+class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
     private lateinit var b: ActivityMainBinding
-    private lateinit var sleepPendingIntent: PendingIntent
-    private val wolJob = Job()
-    private val sleepJob = Job()
-    private val wolScope = CoroutineScope(Dispatchers.Main + wolJob)
 
     companion object {
         const val MAC = "18c04d35cc5b"
         const val IP = "192.168.1.255"
         const val PORT = 4532
         const val PERM_REQ_CODE = 21
+        const val LOCK_SCREEN = "lockScreen"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,11 +51,9 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks, C
             Log.d("SEND", "NO perm")
             askForPermission()
         }
-
-
     }
 
-     fun lockScreen(){
+     private fun lockScreen(){
         val adminComponent = ComponentName(this, DAReceiver::class.java)
         val devicePolicyManager =
             getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
@@ -89,10 +84,6 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks, C
         }
     }
 
-    override fun onClassifyReceived(confidence: Int) {
-        Log.d("SEND", "Confidence got $confidence")
-    }
-
     private fun askForPermission() {
         Log.d("SEND", "here")
         EasyPermissions.requestPermissions(
@@ -102,8 +93,6 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks, C
             Manifest.permission.ACTIVITY_RECOGNITION
         )
     }
-
-
 
     override fun onPermissionsGranted(requestCode: Int, perms: MutableList<String>) {
         checkForSleepiness()

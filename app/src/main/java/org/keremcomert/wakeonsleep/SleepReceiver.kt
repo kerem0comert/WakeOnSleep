@@ -64,7 +64,7 @@ class SleepReceiver() : BroadcastReceiver() {
 
     private fun startMainActivityToLockScreen(ctx: Context){
         val bundle = Bundle()
-        bundle.putBoolean(LOCK_SCREEN, true)
+        bundle.putBoolean(MainActivity.LOCK_SCREEN, true)
         val intent = Intent()
         intent.setClassName(ctx, "org.keremcomert.wakeonsleep.MainActivity")
         intent.putExtras(bundle)
